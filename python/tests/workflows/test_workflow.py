@@ -149,3 +149,29 @@ async def test_workflow_async_steps() -> None:
 
     response = await workflow.run(State())
     assert response.state.output == "Mocked data"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_workflow_run_options_start() -> None:
+    # State
+    class State(BaseModel):
+        trace: str = ""
+
+    # Steps
+    def first(state: State) -> None:
+        state.trace += "first;"
+
+    def second(state: State) -> None:
+        state.trace += "second;"
+
+    workflow: Workflow[State] = Workflow(schema=State)
+    workflow.add_step("first", first)
+    workflow.add_step("second", second)
+    workflow.set_start("first")
+
+    # `start` in the run options takes precedence over the workflow's own start step
+    response = await workflow.run(State(), {"start": "second"})
+
+    assert response.state.trace == "second;"
+    assert [step.name for step in response.steps] == ["second"]
