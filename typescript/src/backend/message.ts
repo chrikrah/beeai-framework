@@ -122,7 +122,7 @@ export abstract class Message<
 
   merge(other: Message<T, R>) {
     this.id = this.id || other.id;
-    Object.assign(this, other.meta);
+    Object.assign(this.meta, other.meta);
     this.content.push(...other.content);
   }
 
